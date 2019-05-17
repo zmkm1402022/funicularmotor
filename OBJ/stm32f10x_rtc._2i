@@ -1,0 +1,7 @@
+--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork -I ..\HARDWARE\LED -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\USER -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\HARDWARE\KEY -I ..\HARDWARE\LCD -I ..\HARDWARE\RTC -I ..\HARDWARE\RTC -I ..\HARDWARE\WKUP -I ..\HARDWARE\ADC -I ..\HARDWARE\DAC -I ..\HARDWARE\DMA -I ..\HARDWARE\IIC -I ..\HARDWARE\24CXX -I ..\HARDWARE\SPI -I ..\HARDWARE\FLASH -I ..\HARDWARE\TOUCH -I ..\HARDWARE\RS485 -I ..\HARDWARE\CAN -I ..\SYSTEM\sys -I ..\HARDWARE\ADC -I ..\USER -I ..\HARDWARE\WatchDOG -I ..\HARDWARE\LED -I ..\HARDWARE\KEY -I ..\HARDWARE\RTC -I ..\HARDWARE\WDG -I ..\HARDWARE\DS18B20 -I ..\HARDWARE\DS1302 -I ..\HARDWARE\MotorControl -I ..\HARDWARE\pid
+-I.\RTE\Device\STM32F103RC
+-I.\RTE\_ChamberCtrlUnit
+-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include
+-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include
+-D__UVISION_VERSION="523" -D_RTE_ -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER -DEN_USART1
+-o ..\obj\stm32f10x_rtc.o --omf_browse ..\obj\stm32f10x_rtc.crf --depend ..\obj\stm32f10x_rtc.d --feedback "..\OBJ\ChamberCtrlUnit.fed" "..\STM32F10x_FWLib\src\stm32f10x_rtc.c"
