@@ -605,9 +605,11 @@ void UavcanMsgReply(void)
 								&RxTransfer.transfer_id,\
 								RxTransfer.priority,\
 								CanardResponse,CAN_tx_buf, 3);	
+		printf("Warning: action to operate the lifter is finished, the result is = %d\r\n", gGlobal.m_CAN.lifter_msg_result);
 		gGlobal.m_CAN.lifter_ready = 0;
 		gGlobal.m_CAN.lifter_msg_result = 0;
 		gGlobal.m_MOTORLifter.dir = 0;		
+		
 	}
 }
 
@@ -723,7 +725,7 @@ void UavcanFun(void)
 				break;
 					
 				
-				case UAVCAN_SERVICE_ID_DOOROPERATION:
+				case UAVCAN_SERVICE_ID_DOOROPERATION:   // D8
 					if(gGlobal.m_CAN.door_ready == 0)
 					{
 						gGlobal.m_CAN.door_ready = 1;
@@ -731,7 +733,7 @@ void UavcanFun(void)
 						if (CAN_rx_buf [0] ==1)  
 						{
 							//gGlobal.m_CAN.operation_mode = 1;
-							//操作上门
+							//操作上门  example: 01 01 00 01(open upper door);01 01 00 02 (close the upper door)
 							if(CAN_rx_buf[1] ==1 && CAN_rx_buf[2] ==0)  
 							{
 								gGlobal.m_stack.operationID = 1;
@@ -739,7 +741,7 @@ void UavcanFun(void)
 								switch (CAN_rx_buf[3])
 								{
 									case 1:
-											gGlobal.m_stack.operationDIR = 0x11; //open the door
+											gGlobal.m_stack.operationDIR = 0x11; //open the door = clockwise
 										break;
 									case 2:
 											gGlobal.m_stack.operationDIR  = 0x12; //close the door
@@ -747,7 +749,8 @@ void UavcanFun(void)
 								}
 							
 							}	
-							//操作下门
+							//操作下门 
+							//example: 01 00 01 01 (open the lower door); 01 00 01 02（close the lower door)
 							else if(CAN_rx_buf[1] ==0 && CAN_rx_buf[2] ==1)
 							{
 								gGlobal.m_stack.operationID = 2;
@@ -759,7 +762,7 @@ void UavcanFun(void)
 									break;
 									
 									case 2:
-										gGlobal.m_stack.operationDIR = 0x11;
+										gGlobal.m_stack.operationDIR = 0x12;
 									break;		
 								}
 							}
@@ -773,6 +776,7 @@ void UavcanFun(void)
 						
 						}
 						/* dual door mode*/
+						// example : 02 01 01 01 open both doors; 02 01 01 02 close both doors
 						else if (CAN_rx_buf [0] ==2)
 						{
 							//gGlobal.m_CAN.operation_mode =2;
@@ -835,22 +839,22 @@ void UavcanFun(void)
 						gGlobal.m_CAN.locker_msg = CAN_rx_buf[0];
 						if ( CAN_rx_buf [0] == 1)
 						{
-							/* code */
+							/* to release the upperlocker */
 							gGlobal.m_LOCKERUpper.status = CLOCKWISE;
 						}
 						else if (CAN_rx_buf [0] == 2)
 						{
-							/* code */
+							/* to lock the upperlocker */
 							gGlobal.m_LOCKERUpper.status = COUNTERCLOCKWISE;
 						}
 						else if (CAN_rx_buf [0] == 3)
 						{
-							/* code */
+							/* to release the lowerlocker */
 							gGlobal.m_LOCKERLower.status = CLOCKWISE;
 						}
 						else if (CAN_rx_buf [0] == 4)
 						{
-							/* code */
+							/* to lock the lowerlocker */
 							gGlobal.m_LOCKERLower.status = COUNTERCLOCKWISE;
 						}
 						else

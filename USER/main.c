@@ -24,17 +24,18 @@ BOOL Check1MSTick(DWORD dwCurTickCount, DWORD dwStart, DWORD DelayTime)
     else
         return ((0xFFFFFFFF - dwStart + dwCurTickCount) < DelayTime);
 }
+u8 t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
 
 int main(void)
 {	 
-		SysTick_Config(SystemCoreClock / 1000);  // 1ms äº§ç?�Ÿä¸?		NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);	 
+		SysTick_Config(SystemCoreClock / 1000);  
+		NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);	 
 		param_temp = (*(uint32_t *)0x08038000)<<2 | (*(uint32_t *)0x08038001);
 		if (param_temp != 0xAA55)
 		{
 		
 		}
-		else
-		{
+		else {
 			if(*(uint32_t *)0x08038003 == 1)
 			{
 				gGlobal.m_MOTORLower.interval = (*(uint32_t *)0x08038008)<<2 | (*(uint32_t *)0x08038009); //default parameter
@@ -72,15 +73,26 @@ int main(void)
 
 		ULMOTORTIMERENABLE;
 		LIFTERTIMERENABLE;
-		LOCKERSTANDBY;
+		LOCKERBRAKE
 		LOCKERTIMERENABLE;
 		CAN_Configuration();
 		PWRInit();
 		PWRSwitch = 1;
 //		gGlobal.m_MOTORLifter.status = RUNNING;
 //		Lifter_Running(0x11, PWM_DUTYFACTOR_50);
+//		gGlobal.m_Status.BROADCASTFlag = 1;
 		while(1)
 		{
+			t1 = UPPERLOCKER_RELEASED_IN;
+			t2 = UPPERLOCKER_LOCKED_IN;
+			t3 = LOWERLOCKER_RELEASED_IN;
+			t4 = LOWERLOCKER_LOCKED_IN;
+			t5 = UPPERDOOR_CLOSE_IN;
+			t6 = UPPERDOOR_OPEN_IN;
+			t7 = LOWERDOOR_CLOSE_IN;
+			t8 = LOWERDOOR_OPEN_IN;
+			t9 = LIFTER_TOP_IN;
+			t10 = LIFTER_BOTTOM_IN;
 			UavcanFun();
 			MotorProcessMonitoring();
 			UavcanMsgReply();
@@ -101,6 +113,10 @@ int main(void)
 				{
 					gGlobal.m_stack.boradcast_interval = gGlobal.m_LocalTime;
 					Uavcan_Broadcast();
+//					if(UPPERLOCKER_RELEASED_IN ==1 && UPPERLOCKER_LOCKED_IN ==0)
+//						LockerbacktoOrigin(1, COUNTERCLOCKWISE);
+//					else if(UPPERLOCKER_RELEASED_IN ==0 && UPPERLOCKER_LOCKED_IN ==1)
+//						LockerbacktoOrigin(1, CLOCKWISE);
 				}
 			}
 
@@ -133,7 +149,7 @@ void PWRInit(void)
 }
 
 
-
+/*to trigger an OCP stop for uppermotor operation*/
 void OCP0_IRQHandler(void)
 {
 	if (EXTI_GetFlagStatus(MOTORUPPER_INT_EXTI_LINE) == SET)
@@ -142,13 +158,15 @@ void OCP0_IRQHandler(void)
 		EXTI_ClearFlag(MOTORUPPER_INT_EXTI_LINE);
 		if (UPPERMOTOR_OCP_IN == RESET)
 		{
-		
+			DoorSingleMode_Running(BRAKE, 0,1) ;
+			gGlobal.m_Status.Upperdoor_OCPFLAG = 1;
+			gGlobal.m_Status.UPPERDOOR_ErrCNT ++;
 		}
-	
 	}
-
 }
 
+
+/* input to trigger the stop of lifter at middle position PD2*/
 void LifterMidder_IRQHandler(void)
 {
 	if (EXTI_GetFlagStatus(LIFTER_TOP_INT_EXTI_LINE) == SET)
@@ -173,11 +191,14 @@ void LifterMidder_IRQHandler(void)
 	}	
 }
 
+/* to trigger the stop at PB1 position*/
 void Upperdoor_IRQHandler(void)
 {
 	if (EXTI_GetFlagStatus(UPPERDOOR_OPEN_INT_EXTI_LINE) == SET)
 	{
 		/* UPPERDOOR OPEN EXTI LINE */
+		EXTI_ClearITPendingBit(UPPERDOOR_OPEN_INT_EXTI_LINE);
+		EXTI_ClearFlag(UPPERDOOR_OPEN_INT_EXTI_LINE);
 		if (UPPERDOOR_OPEN_IN )
 		{		
 			DoorSingleMode_Running(BRAKE, 0,1) ;
@@ -188,12 +209,13 @@ void Upperdoor_IRQHandler(void)
 			}
 			else
 				printf("Warning : upperdoor-opened sensor problem!\r\n");
-
 		}		
 	}
 
 }
 
+
+/* to trigger an OCP for protecting the lowermotor*/
 void OCP4_IRQHandler(void)
 {
 
@@ -203,22 +225,27 @@ void OCP4_IRQHandler(void)
 		EXTI_ClearFlag(MOTORLOWER_INT_EXTI_LINE);	
 		if( LOWERMOTOR_OCP_IN == RESET)
 		{
-			;
+			DoorSingleMode_Running(BRAKE, 0,2) ;
+			gGlobal.m_Status.Lowerdoor_OCPFLAG = 1;
+			gGlobal.m_Status.LOWERDOOR_ErrCNT ++;
 		}
-	
 	}
-		
-
 }
 
 void OCP9_5_IRQHandler(void)
 {
-
+	/* to trigger an OCP for protecting the lifter */
 	if(EXTI_GetFlagStatus(LIFTER_INT_EXTI_LINE) == SET)
 	{
 		EXTI_ClearITPendingBit(LIFTER_INT_EXTI_LINE);
 		EXTI_ClearFlag(LIFTER_INT_EXTI_LINE);	
-		
+/* to trigger the stop of lowerdoor at PA9 position*/
+		if (LOWERDOOR_OPEN_IN == SET)
+		{
+			/* code */
+			DoorSingleMode_Running(BRAKE, 0,2) ;
+			gGlobal.m_stack.doorEndingSuccess++;
+		}		
 		if( LIFTERMOTOR_OCP_IN == RESET)
 		{
 			gGlobal.m_MOTORLifter.err_OCPcnt ++;
@@ -226,24 +253,22 @@ void OCP9_5_IRQHandler(void)
 			{
 				/* code */
 				Lifter_Running(IDLE, 0);
-				gGlobal.m_Status.Lifter_OCPFLAG = 1;
-				gGlobal.m_Status.Lifter_OCPCNT ++;
-				gGlobal.m_MOTORLifter.err_OCPcnt =0;
 			}
 		}
-	
-	}
 
-	if (EXTI_GetFlagStatus(LOWERDOOR_OPEN_INT_EXTI_LINE) == SET)
+	}
+	
+/* to trigger the stop of lowerdoor at PA8 position*/
+	if (EXTI_GetFlagStatus(LOWERDOOR_CLOSE_INT_EXTI_LINE) == SET)
 	{
 		/* code */
-		EXTI_ClearFlag(LOWERDOOR_OPEN_INT_EXTI_LINE);
-		EXTI_ClearITPendingBit(LOWERDOOR_OPEN_INT_EXTI_LINE);
-		if (LOWERDOOR_OPEN_IN)
+		EXTI_ClearFlag(LOWERDOOR_CLOSE_INT_EXTI_LINE);
+		EXTI_ClearITPendingBit(LOWERDOOR_CLOSE_INT_EXTI_LINE);
+		if (LOWERDOOR_CLOSE_IN)
 		{
 			/* code */
 			DoorSingleMode_Running(BRAKE, 0,2) ;
-
+			gGlobal.m_stack.doorEndingSuccess++;
 		}
 	}
 }
@@ -270,7 +295,7 @@ void OCP15_10_IRQHandler(void)
 			}
 		}
 	}
-
+/* to trigger the stop of upperdoor at PB13 position*/
 	if (EXTI_GetFlagStatus(UPPERDOOR_CLOSE_INT_EXTI_LINE) == SET)
 	{
 		/* code */
@@ -288,7 +313,7 @@ void OCP15_10_IRQHandler(void)
 				printf("BUG : upperdoor-closed sensor problem!\r\n");
 		}	
 	}
-
+	/* input to trigger the stop of lifter at bottom position PA10*/
 	if (EXTI_GetFlagStatus(LIFTER_BOTTOM_INT_EXTI_LINE) == SET)
 	{
 		/* code */
@@ -314,12 +339,31 @@ void OCP15_10_IRQHandler(void)
 
 void runIII_init(void)
 {
+	int err;
 	if (UPPERDOOR_CLOSE_IN != SET)
 	{
-
-
+		err = LockerbacktoOrigin( 1 , CLOCKWISE);
+		if (err !=0)
+			printf("Error: fail to unlock\r\n");
+		else
+		{
+				if(UPPERLOCKER_LOCKED_IN != SET)
+				{
+					err = DoorbacktoOrigin(1, COUNTERCLOCKWISE);
+					if(err != RESET)
+					{
+						printf("error: fail to close the upperdoor");
+					}
+				}
+				
+				if(LOWERLOCKER_LOCKED_IN != SET)
+				{
+					err = DoorbacktoOrigin(2, COUNTERCLOCKWISE);
+					if(err != RESET)
+						printf("error: fail to close the upperdoor");
+				}
+		}
 	}
-
 }
 
 

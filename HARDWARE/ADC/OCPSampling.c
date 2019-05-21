@@ -173,7 +173,7 @@ void LockerChannelDisable(void)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);	
 	LOCKERCHANNEL_DISABLE = 0;
 }
-/* ?ê‰ΩçÂºÄ?≥ÂàùÂßã?ñ */
+
 void ONPOSITIONChannel_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;	
@@ -212,8 +212,8 @@ void ONPOSITIONChannel_Init(void)
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource9);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource8);	
 
-	EXTI_InitStructure.EXTI_Line=	LIFTER_TOP_INT_EXTI_LINE | LIFTER_BOTTOM_INT_EXTI_LINE | UPPERDOOR_CLOSE_INT_EXTI_LINE | UPPERDOOR_OPEN_INT_EXTI_LINE
-																| LOWERDOOR_CLOSE_INT_EXTI_LINE | LOWERDOOR_OPEN_INT_EXTI_LINE;
+	EXTI_InitStructure.EXTI_Line=	LIFTER_TOP_INT_EXTI_LINE | LIFTER_BOTTOM_INT_EXTI_LINE | UPPERDOOR_CLOSE_INT_EXTI_LINE | UPPERDOOR_OPEN_INT_EXTI_LINE| LOWERDOOR_CLOSE_INT_EXTI_LINE | LOWERDOOR_OPEN_INT_EXTI_LINE;
+																
 																
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;

@@ -63,7 +63,7 @@
 #define OCP9_5_IRQHandler								EXTI9_5_IRQHandler
 #define OCP15_10_IRQHandler								EXTI15_10_IRQHandler
 #define Upperdoor_IRQHandler							EXTI1_IRQHandler
-#define LifterMidder_IRQHandler							EXTI2_IRQHandler
+#define LifterMidder_IRQHandler							EXTI2_IRQHandler  
 
 /* EXTI-LINE input state*/
 #define LIFTER_TOP_IN 									GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_2)		// PD2: switch sensor at middle position for lifter  (CONN: J25)
@@ -148,11 +148,13 @@ typedef struct{
 	uint8_t LIFTER_STATUS;     //0X01 = middle position ; 0x02 = bottom position;0x03 = in-between
 	uint8_t UPPERDOOR_STATUS;  //0X01 = open state ; 0x02 = closed state;0x03 = in-between
 	uint8_t LOWERDOOR_STATUS;	//0X01 = open state ; 0x02 = closed state; 0x03 = in-between
-	uint8_t Electric_LockerChannel; // 0 = on; 1 = off;
-	uint16_t UPPERDOOR_ErrCNT;
-	uint16_t LOWERDOOR_ErrCNT;
+	uint8_t  Electric_LockerChannel; // 0 = on; 1 = off;
+	uint16_t UPPERDOOR_ErrCNT;   // _ErrCNT is used to record the OCP/error situation permantantly
+	uint8_t  Upperdoor_OCPFLAG;
+	uint8_t  Lowerdoor_OCPFLAG;
+	uint16_t LOWERDOOR_ErrCNT;   // _ErrCNT is used to record the OCP/error situation permantantly
 	uint16_t LIFTER_ErrCNT;
-	uint16_t LOCKER_ErrCNT;
+	uint16_t LOCKER_ErrCNT;   // _ErrCNT is used to record the OCP/error situation permantantly
 	uint8_t  LOCKER_RECOVERY_CNT; 
 	uint16_t Lifter_OCPCNT;
 	uint8_t  Lifter_OCPFLAG;
@@ -189,6 +191,7 @@ typedef struct
 	ACCELERATIONPARAM operationDoorAcc;
 	int16_t operationDUTY;  
 	uint16_t operationAccTimeforLifter;
+	uint16_t operationDeaccTimeforLifter;
 	uint16_t operationIntCNTforLifter;
 	uint32_t temperature_interval;
 	uint32_t boradcast_interval;

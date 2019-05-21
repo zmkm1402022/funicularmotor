@@ -41,6 +41,7 @@
 #define LIFTERIDLE   						LIFTERENABLE = 0
 #define LIFTERBRAKE						{TIM_SetCompare3(TIM2,0);TIM_SetCompare4(TIM2,0);}
 #define LOCKERSTANDBY						{TIM_SetCompare1(TIM3,0);TIM_SetCompare2(TIM3,0);}
+#define LOCKERBRAKE						{TIM_SetCompare1(TIM3,400);TIM_SetCompare2(TIM3,400);}
 
 #define disableOVC_IRQ 			EXTI->IMR &= ~(1<<OVCurrent_PC14)
 #define enableOVC_IRQ 			EXTI->IMR |= 1<<OVCurrent_PC14
@@ -85,12 +86,15 @@ void Locker_Switching_Init(void);
 
 void DoorEnable_Config(void);
 void LifterEnable_Config(void);
-void Lifter_Running(u8 dir, u16 dutycycle);
+void Lifter_Running(u8 dir, int16_t dutycycle);
 void MotorProcessMonitoring(void);
 void MotorFaultMonitoring(void);
 void LockerLatch_Config(uint8_t lockerID);
 void LockerRelease_Config(uint8_t lockerID);
-void DoorDualMode_Running(u8 dir, u16 dutycycle);
-void DoorSingleMode_Running(u8 dir, u16 dutycycle,u8 door);
+void DoorDualMode_Running(u8 dir, int16_t dutycycle);
+void DoorSingleMode_Running(u8 dir, int16_t dutycycle,u8 door);
+int LockerbacktoOrigin(uint8_t l_ID, uint8_t l_dir);
+int DoorbacktoOrigin(uint8_t o_ID, uint8_t o_dir);
+void Locker_Running(u8 dir, u16 dutycycle);
 #endif
 

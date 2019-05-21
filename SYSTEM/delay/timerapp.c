@@ -151,7 +151,7 @@ void Timer1Init(void)
     TIM_OCInitStructure.TIM_Pulse =2000;    
     TIM_OC1Init(TIM1,&TIM_OCInitStructure);
 
-    TIM_OCInitStructure.TIM_Pulse =2500; 
+    TIM_OCInitStructure.TIM_Pulse =8000; 
     TIM_OC2Init(TIM1,&TIM_OCInitStructure);
 
     TIM_ITConfig(TIM1,TIM_IT_CC1,DISABLE ); 
@@ -175,6 +175,7 @@ void TIM1_CC_IRQHandler(void)
         {
             gGlobal.m_stack.operationDUTY  -=gGlobal.m_stack.operationDoorAcc.deaccStep ;
         }
+				
 
         if(gGlobal.m_stack.operationID != 3)
             DoorSingleMode_Running(gGlobal.m_stack.operationDIR,\
@@ -189,13 +190,15 @@ void TIM1_CC_IRQHandler(void)
         TIM_ClearFlag(TIM1,TIM_IT_CC2);
         TIM_ClearITPendingBit(TIM1,TIM_IT_CC2);
         gGlobal.m_stack.operationIntCNTforLifter ++;
-        if (gGlobal.m_stack.operationIntCNTforLifter < gGlobal.m_stack.operationIntCNTforLifter)
-        {
+        if (gGlobal.m_stack.operationIntCNTforLifter < 500)   // 5s is to accelate the lifter motor
             /* code */
-            gGlobal.m_MOTORLifter.dutycycle +=20;
-        }
-        Lifter_Running(gGlobal.m_MOTORLifter.dir, gGlobal.m_MOTORLifter.dutycycle);
-        
+					gGlobal.m_MOTORLifter.dutycycle += 2 ;
+				else if(gGlobal.m_stack.operationIntCNTforLifter >900){
+					gGlobal.m_MOTORLifter.dutycycle --;
+					if(gGlobal.m_MOTORLifter.dutycycle < PWM_DUTYFACTOR_35)
+						gGlobal.m_MOTORLifter.dutycycle = PWM_DUTYFACTOR_35;
+				}
+        Lifter_Running(gGlobal.m_MOTORLifter.dir, gGlobal.m_MOTORLifter.dutycycle);   
     }
 }
 
