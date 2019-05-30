@@ -161,11 +161,12 @@ void MotorProcessMonitoring(void)
 			}
 			if (gGlobal.m_stack.operationDIR == COUNTERCLOCKWISE)
 			{
-				if (UPPERDOOR_CLOSE_IN == 1 || LOWERDOOR_CLOSE_IN == 1 )
-				{
-					/* code */
-					LockerLatch_Config(gGlobal.m_stack.operationID );
-				}
+				if((gGlobal.m_stack.operationID ==1 && UPPERDOOR_CLOSE_IN == 1)\
+						|| (gGlobal.m_stack.operationID ==2 && LOWERDOOR_CLOSE_IN == 1))
+						LockerLatch_Config(gGlobal.m_stack.operationID );
+			
+				else
+					printf("error: the door is closed, but the sensor is not correctly touched\r\n");
 				
 			}
 		}
@@ -854,9 +855,9 @@ void DoorEnable_Config(void)
 				gGlobal.m_MOTORLower.status = RUNNING;
 			gGlobal.m_stack.doorEndingSuccess = 0;
 			gGlobal.m_stack.operationDoorAcc.realtimeIntCnt =0;
-			gGlobal.m_stack.operationDoorAcc.accTime = 100;
-			gGlobal.m_stack.operationDoorAcc.deaccTime = 200 ;
-			gGlobal.m_stack.operationDoorAcc.accStep = 20 ;
+			gGlobal.m_stack.operationDoorAcc.accTime = 80;
+			gGlobal.m_stack.operationDoorAcc.deaccTime = 150 ;
+			gGlobal.m_stack.operationDoorAcc.accStep = 10 ;
 			gGlobal.m_stack.operationDoorAcc.deaccStep =20 ;
 			gGlobal.m_stack.operationDUTY = PWM_DUTYFACTOR_20;
 			printf("Warning: Singlemode the Lowerdoor starts to open or close!\r\n");
@@ -877,7 +878,7 @@ void DoorEnable_Config(void)
 			/*check the lowerdoor state*/
 			DoorStateCheck(2, gGlobal.m_stack.operationDIR,2);
 			/*check the lifter state*/
-			DoorStateCheck(3, 0, 0);
+			DoorStateCheck(3, 0, 2);
 			if (gGlobal.m_LOCKERLower.err_flag !=0 || gGlobal.m_MOTORLower.err_flag !=0 || gGlobal.m_MOTORUpper.err_flag !=0 || gGlobal.m_MOTORLower.err_flag !=0)
 			{
 				/* code */
@@ -940,6 +941,11 @@ void LifterEnable_Config(void)
 		gGlobal.m_Status.LIFTER_ErrCNT ++;
 		printf("Warning: Lifter is not at the initial position\r\n");
 	}
+	
+	UPPERLOCKER_DISABLE;  // prepare to operate lifter locker
+	LOWERLOCKER_DISABLE;
+	LIFTERLOCKER_ENABLE;
+	
 	gGlobal.m_MOTORLifter.timetostart = gGlobal.m_LocalTime;
 	gGlobal.m_stack.operationIntCNTforLifter = 100;
 	gGlobal.m_MOTORLifter.status = RUNNING;
@@ -947,7 +953,7 @@ void LifterEnable_Config(void)
 	gGlobal.m_stack.operationIntCNTforLifter = 0;
 	gGlobal.m_stack.lifterEndingSuccess = 0;
 	printf("Start to operate the Lifter with the direction of %x\r\n",gGlobal.m_MOTORLifter.dir);
-	gGlobal.m_MOTORLifter.dutycycle = 0;
+	gGlobal.m_MOTORLifter.dutycycle = PWM_DUTYFACTOR_10;
 	Lifter_Running(gGlobal.m_MOTORLifter.dir, gGlobal.m_MOTORLifter.dutycycle);
 	TIM_ITConfig(TIM1,TIM_IT_CC2,ENABLE ); 
 	TIM1->CR1 &= (uint16_t)(~((uint16_t)TIM_CR1_CEN));
@@ -1025,7 +1031,8 @@ void LockerLatch_Config(uint8_t lockerID)
 		UPPERLOCKER_DISABLE;
 		Locker_Running(COUNTERCLOCKWISE, 150);
 		LOCKERTIMERENABLE;
-		while(LOWERLOCKER_RELEASED_IN != 1 )
+		count =0;
+		while(LOWERLOCKER_LOCKED_IN != 1 )
 		{
 			count ++;
 			if (count >= 0x8954400)  // 2s = 0x8954400
@@ -1097,7 +1104,7 @@ void LockerRelease_Config(uint8_t lockerID)
 		while(UPPERLOCKER_RELEASED_IN != 1 )
 		{
 			count ++;
-			if (count >= 0x8954400)  // 2s = 0x8954400
+			if (count >= 0x154400)  // 2s = 0x8954400
 			{
 				/* code */
 				if (UPPERLOCKER_LOCKED_IN == 1)
@@ -1142,16 +1149,17 @@ void LockerRelease_Config(uint8_t lockerID)
 	else if (lockerID == 2)
 	{
 		/* code */
-		/* release the upperlocker */
+		/* release the lowerlocker */
 		gGlobal.m_LOCKERLower.err_flag = 0;
 		LOWERLOCKER_ENABLE;
 		UPPERLOCKER_DISABLE;
-		Locker_Running(CLOCKWISE, 300);
+		Locker_Running(CLOCKWISE, 150);
 		LOCKERTIMERENABLE;
 		while(LOWERLOCKER_RELEASED_IN != 1 )
 		{
 			count ++;
-			if (count >= 0x8954400)  // 2s = 0x8954400
+			printf(".");
+			if (count >= 0x154400)  // 2s = 0x8954400
 			{
 				/* code */
 				if (LOWERLOCKER_LOCKED_IN == 1)
@@ -1166,7 +1174,6 @@ void LockerRelease_Config(uint8_t lockerID)
 			}
 			if (gGlobal.m_Status.LOCKER_OCPFLAG == 1)
 			{
-				
 				gGlobal.m_LOCKERLower.err_flag = 10;
 				gGlobal.m_Status.LOCKER_OCPFLAG = 0 ;
 				printf("Error: the locker channel is tripped off due to overcurrent issue!\r\n");
@@ -1174,7 +1181,6 @@ void LockerRelease_Config(uint8_t lockerID)
 				LOCKERSTANDBY;
 				break;
 			}
-
 		}
 		Locker_Running(BRAKE, 80);
 		if (LOWERLOCKER_LOCKED_IN == 1 )
@@ -1193,6 +1199,57 @@ void LockerRelease_Config(uint8_t lockerID)
 			gGlobal.m_Status.LOCKER_ErrCNT ++;
 			printf("Error: The lowerlocker fails to release, errorcode is %d\r\n",gGlobal.m_LOCKERLower.err_flag );
 		}
+	}
+	else
+	{
+		/* release the lifterlocker */
+		gGlobal.m_LOCKERLifter.err_flag  = 0;
+		Locker_Running(CLOCKWISE, 150);
+		while(LIFTERLOCKER_RELEASED_IN != 1 )
+		{
+			count ++;
+			printf(".");
+			if (count >= 0x154400)  // 2s = 0x8954400
+			{
+				/* code */
+				if (LOWERLOCKER_LOCKED_IN == 1)
+				{
+					/* if the PB13 is not released (and PB1 is not triggered )within 2s, this situation could be motor problem */
+					gGlobal.m_LOCKERLower.err_flag = 1;
+				}
+				/* if the PB13 is released but PB1 is not triggered within 2s*/
+				else 
+					gGlobal.m_LOCKERLower.err_flag = 2;  //timeout
+				break;
+			}
+			if (gGlobal.m_Status.LOCKER_OCPFLAG == 1)
+			{
+				gGlobal.m_LOCKERLower.err_flag = 10;
+				gGlobal.m_Status.LOCKER_OCPFLAG = 0 ;
+				printf("Error: the locker channel is tripped off due to overcurrent issue!\r\n");
+				printf("Error: corresponding error code is %d!\r\n",gGlobal.m_LOCKERUpper.err_flag);
+				LOCKERSTANDBY;
+				break;
+			}
+		}
+		Locker_Running(BRAKE, 80);
+		if (LOWERLOCKER_LOCKED_IN == 1 )
+		{
+			gGlobal.m_Status.LOWERLOCKER_STATUS = 1;
+		}
+		else if (LOWERLOCKER_RELEASED_IN == 1)
+		{
+			gGlobal.m_Status.LOWERLOCKER_STATUS = 2;
+		}
+		else
+			gGlobal.m_Status.LOWERLOCKER_STATUS =3;
+		if (gGlobal.m_LOCKERLower.err_flag != 0)
+		{
+			/* code */
+			gGlobal.m_Status.LOCKER_ErrCNT ++;
+			printf("Error: The lowerlocker fails to release, errorcode is %d\r\n",gGlobal.m_LOCKERLower.err_flag );
+		}	
+	
 	}
 }
 

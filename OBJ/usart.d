@@ -44,3 +44,4 @@
 ..\obj\usart.o: ..\SYSTEM\delay\timerapp.h
 ..\obj\usart.o: ..\HARDWARE\DS18B20\ds18b20.h
 ..\obj\usart.o: ..\HARDWARE\MotorControl\exDCMotor.h
+..\obj\usart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

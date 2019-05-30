@@ -831,7 +831,7 @@ void UavcanFun(void)
 				break;
 					
 					
-				case UAVCAN_SERVICE_ID_LOCKER:
+				case UAVCAN_SERVICE_ID_LOCKER:		//D9
 					if (gGlobal.m_CAN.locker_ready == 0)
 					{
 						/* code */

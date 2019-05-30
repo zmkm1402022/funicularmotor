@@ -10,22 +10,24 @@
 #define DUTYCYCLE ((uint32_t) TIM3_PERIOD_CNT/2)
 
 /*  Definitions of lockers , 继电器切换开关 */
-#define UPPERLOCKER PCout(0)	//支持切换上门锁电机使能通道
+#define UPPERLOCKER 			PCout(0)	//支持切换上门锁电机使能通道
 
-#define LOWERLOCKER PCout(1)  //支持切换下门锁电机使能通道
+#define LOWERLOCKER 			PCout(1)  //支持切换下门锁电机使能通道
 
-#define LIFTERLOCKER PCout(2) //支持切换中间隔板电机使能通道
+#define LIFTERLOCKER 			PCout(2) //支持切换中间隔板电机使能通道
 
 /* 过流之路开关定义*/
-#define LOCKERCHANNEL_DISABLE PBout(14)
+#define LOCKERCHANNEL_DISABLE 	PBout(14)
 
-#define LOWERLOCKER_ENABLE LOWERLOCKER=0
-#define LOWERLOCKER_DISABLE LOWERLOCKER=1
-#define UPPERLOCKER_ENABLE UPPERLOCKER=0
-#define UPPERLOCKER_DISABLE UPPERLOCKER=1
+#define LOWERLOCKER_ENABLE 			LOWERLOCKER=0
+#define LOWERLOCKER_DISABLE 		LOWERLOCKER=1
+#define UPPERLOCKER_ENABLE 			UPPERLOCKER=0
+#define UPPERLOCKER_DISABLE 		UPPERLOCKER=1
+#define LIFTERLOCKER_ENABLE			LIFTERLOCKER =0
+#define LIFTERLOCKER_DISABLE		LIFTERLOCKER =1
 
-#define ULMOTORENABLE 				PCout(3)  //支持enable/disable 上/下门电机通道
-#define LIFTERENABLE 				PBout(15) //支持enable/disable 升降隔板电机通道
+#define ULMOTORENABLE 					PCout(3)  //支持enable/disable 上/下门电机通道
+#define LIFTERENABLE 						PBout(15) //支持enable/disable 升降隔板电机通道
 #define ULMOTORTIMERENABLE			TIM_Cmd(TIM5, ENABLE)
 #define LIFTERTIMERENABLE				TIM_Cmd(TIM2, ENABLE)
 #define LOCKERTIMERENABLE				TIM_Cmd(TIM3, ENABLE)
@@ -35,13 +37,13 @@
 
 
 
-#define UPPERMOTORBRAKE 			{TIM_SetCompare1(TIM5,0);TIM_SetCompare2(TIM5,0);}
-#define LOWERMOTORBRAKE 			{TIM_SetCompare3(TIM5,0);TIM_SetCompare4(TIM5,0);}
-#define MOTORIDLE							ULMOTORENABLE = 0
+#define UPPERMOTORBRAKE 				{TIM_SetCompare1(TIM5,0);TIM_SetCompare2(TIM5,0);}
+#define LOWERMOTORBRAKE 				{TIM_SetCompare3(TIM5,0);TIM_SetCompare4(TIM5,0);}
+#define MOTORIDLE								ULMOTORENABLE = 0
 #define LIFTERIDLE   						LIFTERENABLE = 0
-#define LIFTERBRAKE						{TIM_SetCompare3(TIM2,0);TIM_SetCompare4(TIM2,0);}
+#define LIFTERBRAKE						  {TIM_SetCompare3(TIM2,0);TIM_SetCompare4(TIM2,0);}
 #define LOCKERSTANDBY						{TIM_SetCompare1(TIM3,0);TIM_SetCompare2(TIM3,0);}
-#define LOCKERBRAKE						{TIM_SetCompare1(TIM3,400);TIM_SetCompare2(TIM3,400);}
+#define LOCKERBRAKE							{TIM_SetCompare1(TIM3,400);TIM_SetCompare2(TIM3,400);}
 
 #define disableOVC_IRQ 			EXTI->IMR &= ~(1<<OVCurrent_PC14)
 #define enableOVC_IRQ 			EXTI->IMR |= 1<<OVCurrent_PC14

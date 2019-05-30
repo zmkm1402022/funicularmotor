@@ -190,10 +190,10 @@ void TIM1_CC_IRQHandler(void)
         TIM_ClearFlag(TIM1,TIM_IT_CC2);
         TIM_ClearITPendingBit(TIM1,TIM_IT_CC2);
         gGlobal.m_stack.operationIntCNTforLifter ++;
-        if (gGlobal.m_stack.operationIntCNTforLifter < 500)   // 5s is to accelate the lifter motor
+        if (gGlobal.m_stack.operationIntCNTforLifter < 400)   // 5s is to accelate the lifter motor
             /* code */
 					gGlobal.m_MOTORLifter.dutycycle += 2 ;
-				else if(gGlobal.m_stack.operationIntCNTforLifter >900){
+				else if(gGlobal.m_stack.operationIntCNTforLifter >800){
 					gGlobal.m_MOTORLifter.dutycycle --;
 					if(gGlobal.m_MOTORLifter.dutycycle < PWM_DUTYFACTOR_35)
 						gGlobal.m_MOTORLifter.dutycycle = PWM_DUTYFACTOR_35;

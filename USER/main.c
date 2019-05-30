@@ -53,6 +53,7 @@ int main(void)
 		TIM_DELAY_INIT();
 		#ifdef EN_USART1
 		uart_init(115200);
+		gGlobal.m_LastActiveComType = COMM_TYPE_COM1;
 		#else
 		AuxiliaryPorts_Init();
 		#endif
@@ -78,6 +79,10 @@ int main(void)
 		CAN_Configuration();
 		PWRInit();
 		PWRSwitch = 1;
+		LIFTERBRAKE;
+		UPPERMOTORBRAKE;
+		LOWERMOTORBRAKE;
+		LIFTERLOCKER_DISABLE;
 //		gGlobal.m_MOTORLifter.status = RUNNING;
 //		Lifter_Running(0x11, PWM_DUTYFACTOR_50);
 //		gGlobal.m_Status.BROADCASTFlag = 1;
@@ -335,7 +340,9 @@ void OCP15_10_IRQHandler(void)
 		}
 	}
 }
-
+/*
+	initialize doors and locks if they are not at the right position.
+*/
 
 void runIII_init(void)
 {
@@ -365,6 +372,51 @@ void runIII_init(void)
 		}
 	}
 }
+
+
+void InitGlobalSet(void)
+{
+    BYTE i=0,j=0;
+    //以下为系统名称 10字节
+    const BYTE sys_model_name[10] = "MCtrlModel";
+    //以下为系统序列号 16字节
+    const BYTE sys_serial_number[16] = "abcdefghij123456";
+    //BYTE btpasswd[UPDATE_PASSWD_LENGTH]="UPDATE";
+    const BYTE btpasswd[UPDATE_PASSWD_LENGTH]={'U','P','D','A','T','E'};   
+    for (i=0;i<MAX_COM_INDEX;i++)
+    {
+        gGlobal.m_ComSet[i].m_PushIndex = 0;
+        gGlobal.m_ComSet[i].m_btRecvState = 0;
+        for (j=0;j<COM_CACHE_PACK_COUNT;j++)
+        {
+            gGlobal.m_ComSet[i].m_RecvPack[j].m_Pos = 0;
+            gGlobal.m_ComSet[i].m_RecvPack[j].m_Len = 0;
+        }
+    }
+    gGlobal.m_LastActiveComType = 1;
+    gGlobal.m_LocalTime = 0;
+    for(i=0; i<UPDATE_PASSWD_LENGTH; i++)
+    {
+        gGlobal.m_btPWD[i] = btpasswd[i];
+    }
+    //DeviceInfo
+    for(i=0; i<10; i++)
+    {
+        gGlobal.m_DeviceInfo.model_name[i] = sys_model_name[i];
+    }   
+    gGlobal.m_DeviceInfo.firmware_version_H8bit = SYS_SW_VERSION_H8bit;
+    gGlobal.m_DeviceInfo.firnware_version_L8bit = SYS_SW_VERSION_L8bit;
+    gGlobal.m_DeviceInfo.hardware_version_H8bit = SYS_HW_VERSION_H8bit;
+    gGlobal.m_DeviceInfo.hardware_version_L8bit = SYS_HW_VERSION_L8bit;
+    for(i=0; i<16; i++)
+    {
+        gGlobal.m_DeviceInfo.serial_number[i] = sys_serial_number[i];
+    }
+
+}
+
+
+
 
 
 

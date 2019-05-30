@@ -453,6 +453,13 @@
         </Group>
         <Group>
           <GroupName>CORE</GroupName>
+          <Files>
+            <File>
+              <FileName>core_cm3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\CORE\core_cm3.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWLib</GroupName>

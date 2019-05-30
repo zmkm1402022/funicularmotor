@@ -11,6 +11,7 @@
 "..\obj\sys.o"
 "..\obj\usart.o"
 "..\obj\timerapp.o"
+"..\obj\core_cm3.o"
 "..\obj\misc.o"
 "..\obj\stm32f10x_fsmc.o"
 "..\obj\stm32f10x_gpio.o"
